@@ -20,7 +20,7 @@
 - [A comparative analysis on suicidal ideation detection using NLP, ML, and DL](https://www.researchgate.net/publication/360271430_A_Comparative_Analysis_on_Suicidal_Ideation_Detection_Using_NLP_Machine_and_Deep_Learning)
 - [Suicidal profiles detection in Twitter](https://www.scitepress.org/Papers/2019/81676/81676.pdf)
 - [A machine learning approach predicts future risk to suicidal ideation from social media data](https://www.nature.com/articles/s41746-020-0287-6)
-
+- [Systematic review: machine learning and suicidal ideation](https://doi.org/10.1016/j.chb.2021.107095)
 
 ### Repos
 - [Suicidal Ideation Detection in Online User Contents](https://github.com/shaoxiongji/sw-detection)

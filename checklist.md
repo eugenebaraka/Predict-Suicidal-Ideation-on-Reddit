@@ -1,6 +1,10 @@
+# Project checklist
+
 1. Build a Twitter crawler or modify the already built crawler 
    - This will need a well-researched set of words that are most likely related to depression (find an existing dataset that is labelled and uses twitter data). 
    - Make sure you have at least a million data points 
+   - word pool ([Janshisky et al. 2013](https://doi.org/10.1027/0227-5910/a000234)): 
+   “suicidal; suicide; kill myself; my suicide note; my suicide letter; end my life; never wake up; can't go on; not worth living; ready to jump; sleep forever; want to die; be dead; better off without me; better off dead; suicide plan; suicide pact; tired of living; don't want to be here; die alone; go to sleep forever”
 
 2. Label the data since some of tweets are not related to suicide 
    - This is a very hectic process  
@@ -29,3 +33,5 @@ Classify whether a text is self-harm or not
 How companies' like FB and twitter solve that problem (self-harm) 
 
 Make cool: train a model on available data, and scrape your own data and try to predict them... 
+
+

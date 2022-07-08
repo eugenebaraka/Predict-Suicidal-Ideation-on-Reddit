@@ -1,5 +1,7 @@
 # Project checklist
 
+## Supervised ML
+
 1. Build a Twitter crawler or modify the already built crawler 
    - This will need a well-researched set of words that are most likely related to depression (find an existing dataset that is labelled and uses twitter data). 
    - Make sure you have at least a million data points 
@@ -20,18 +22,18 @@
    - Naïve Bayse 
    - Work my way up to neural networks (can use an already built CNN) 
 
- 
-
- 
-
+### Steps
 Train a model for data that's available 
-
 Paper published in the Nature journal 
-
 Classify whether a text is self-harm or not 
-
 How companies' like FB and twitter solve that problem (self-harm) 
+Novelty: train a model on available data, and scrape your own data and try to predict them... 
 
-Make cool: train a model on available data, and scrape your own data and try to predict them... 
 
+## Unsupervised ML or Semi-supervised
+
+1. Semantic similarity measures; clustering
+   - Is this possible for tweets? This would be a very feasible and easy way to categorize data (ex. Risk vs. No Risk)
+   - May be manually label suicidal and non-suicidal for Risk category? This would save a lot of time
+   - Then use NLP to predict suicidal ideation/thoughts
 

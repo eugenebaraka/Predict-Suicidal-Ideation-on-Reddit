@@ -21,8 +21,7 @@
 - [Suicidal profiles detection in Twitter](https://www.scitepress.org/Papers/2019/81676/81676.pdf)
 - [A machine learning approach predicts future risk to suicidal ideation from social media data](https://www.nature.com/articles/s41746-020-0287-6)
 - [Systematic review: machine learning and suicidal ideation](https://doi.org/10.1016/j.chb.2021.107095)
-- [An unsupervised learning approach for automatically to categorize potential suicide](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8966443&casa_token=fVWKg01GG_kAAAAA:XVQJlWhEPP74dUtA6FyUVdX19l9HxGVvaSxCEXx5zhdOZcIqJJ9umX4qk5SUyyARfv8OLA&tag=1)
-
+- [An unsupervised learning approach for automatically to categorize potential suicide](https://doi.org/10.1109/SCCC49216.2019.8966443)
 ### Repos
 - [Suicidal Ideation Detection in Online User Contents](https://github.com/shaoxiongji/sw-detection)
 - [Web Spider (Reddit API)](https://github.com/shaoxiongji/webspider)

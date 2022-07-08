@@ -23,11 +23,10 @@
    - Work my way up to neural networks (can use an already built CNN) 
 
 ### Steps
-Train a model for data that's available 
-Paper published in the Nature journal 
-Classify whether a text is self-harm or not 
-How companies' like FB and twitter solve that problem (self-harm) 
-Novelty: train a model on available data, and scrape your own data and try to predict them... 
+- Train a model for data that's available (check paper published in the Nature journal)
+- Classify whether a text is self-harm or not 
+- How companies' like FB and twitter solve that problem (self-harm) 
+- Novelty: train a model on available data, and scrape your own data and try to predict them... 
 
 
 ## Unsupervised ML or Semi-supervised

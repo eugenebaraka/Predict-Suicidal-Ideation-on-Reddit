@@ -35,4 +35,5 @@
    - Is this possible for tweets? This would be a very feasible and easy way to categorize data (ex. Risk vs. No Risk)
    - May be manually label suicidal and non-suicidal for Risk category? This would save a lot of time
    - Then use NLP to predict suicidal ideation/thoughts
+2. Annotate using VADER and TextBlob for sentiment polarity first?
 

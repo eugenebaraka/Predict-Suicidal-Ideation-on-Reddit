@@ -24,6 +24,7 @@
 - [An unsupervised learning approach for automatically to categorize potential suicide](https://doi.org/10.1109/SCCC49216.2019.8966443)
 - [A lexicon-based approach to detecting suicide-related messages on Twitter](https://doi.org/10.1016/j.bspc.2020.102355)
 - [Detection of Suicide Ideation in Social Media Forums Using Deep Learning](https://doi.org/10.3390/a13010007)
+- [Supervised learning for suicidal ideation detection in online user content](https://doi.org/10.1155/2018/6157249)
 ### Repos
 - [Suicidal Ideation Detection in Online User Contents](https://github.com/shaoxiongji/sw-detection)
 - [Web Spider (Reddit API)](https://github.com/shaoxiongji/webspider)

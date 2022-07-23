@@ -36,4 +36,5 @@
    - May be manually label suicidal and non-suicidal for Risk category? This would save a lot of time
    - Then use NLP to predict suicidal ideation/thoughts
 2. Annotate using VADER and TextBlob for sentiment polarity first?
+3. WEAK SUPERVISION!!!!
 

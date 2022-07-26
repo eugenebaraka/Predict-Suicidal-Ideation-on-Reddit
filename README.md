@@ -27,7 +27,12 @@
 - [Supervised learning for suicidal ideation detection in online user content](https://doi.org/10.1155/2018/6157249)
 - [Machine learning for suicidal ideation identification: A systematic literature review](https://doi.org/10.1016/j.chb.2021.107095)
 - [A brief introduction to weakly supervised learning](https://doi.org/10.1093/nsr/nwx106)
-- 
+
+
+### Data Sources
+- [Manas et al 2019](https://zenodo.org/record/2667859#.YCwdTR1OlQI)
+- [Manas et al 2021](https://doi.org/10.5281/zenodo.4543776)
+
 ### Repos
 - [Suicidal Ideation Detection in Online User Contents](https://github.com/shaoxiongji/sw-detection)
 - [Web Spider (Reddit API)](https://github.com/shaoxiongji/webspider)

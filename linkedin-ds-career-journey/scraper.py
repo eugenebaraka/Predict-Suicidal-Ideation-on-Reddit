@@ -18,12 +18,12 @@ sleep(2)    ## I use sleep throughout the script to allow for webpage loading la
 
 ## Login to a linkedin account
 username = driver.find_element(By.ID, 'session_key')
-username.send_keys("eugenebaraka@gmail.com")
+username.send_keys("email@email.com")
 
 sleep(2)
 
 password = driver.find_element(By.ID, 'session_password')
-password.send_keys('Tuamini128.')
+password.send_keys('XXXXXXXX')
 
 sleep(2)
 

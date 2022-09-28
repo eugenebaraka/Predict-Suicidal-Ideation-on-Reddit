@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt
 ## Text analysis and preprocessing
 # from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import math, re, string
-import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from textblob import TextBlob
 # from nltk.tokenize import word_tokenize
 # from nltk.probability import FreqDist
 # from nltk.corpus import stopwords
@@ -104,3 +105,28 @@ def extract_lengths(data, col):
 
     return new_data
 
+
+
+# C. Sentiment Analysis 
+
+def get_sentiment(data, col, algo = 'vader'):
+
+    """
+    Computing sentiment using Vader, or TextBlob
+    """
+    tqdm.pandas()
+    new_data = data.copy()
+
+    if algo == 'vader':
+        sent = SentimentIntensityAnalyzer()
+        new_data['sentiment'] = new_data[col].progress_apply(lambda x: sent.polarity_scores(str(x))['compound'])
+
+    elif algo == 'textblob':
+        new_data['sentiment'] = new_data[col].progress_apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+
+    else:
+        print("Please select a valid algorithm")
+
+    print(data[['sentiment']].describe().T)
+
+    return new_data

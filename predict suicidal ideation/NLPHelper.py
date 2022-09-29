@@ -130,3 +130,8 @@ def get_sentiment(data, col, algo = 'vader'):
     print(data[['sentiment']].describe().T)
 
     return new_data
+
+
+# D. Create stopwords
+
+def stopwords_list(lang = ['english'], add_words = [], )

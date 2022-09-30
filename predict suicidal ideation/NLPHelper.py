@@ -20,6 +20,7 @@ import math, re, string
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from textblob import TextBlob
+import langdetect
 # from nltk.tokenize import word_tokenize
 # from nltk.probability import FreqDist
 # from nltk.corpus import stopwords
@@ -56,18 +57,16 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
     # Univariate Analysis
     if y is None: 
         fig, ax = plt.subplots(figsize = figsize)
-        fig.suptitle(x, fontsize = 20)
+        fig.suptitle(title, fontsize = 20)
 
         ## Plot categorical variables
         if data[x].nunique() <= maxcat:
             if top_n is None:
                 data[x].value_counts(normalize = normalize).plot(kind = "barh").grid('x')
-                ax.set(ylabel = ylabel)
-                ax.set_title(title, fontsize = 20)
+                ax.set(ylabel = xlabel)
             else:  
                 data[x].value_counts(normalize = normalize).sort_values(ascending = False).head(top_n).plot(kind = "barh").grid('x')
-                ax.set(ylabel = ylabel)
-                ax.set_title(title, fontsize = 20)
+                ax.set(ylabel = xlabel)
         ## Plot numerical variables
         else:
             sns.distplot(data[x], hist=True, kde=True, kde_kws={'shade':True}, ax=ax)
@@ -108,7 +107,10 @@ def extract_lengths(data, col):
 
     return new_data
 
-
+## Detect Language
+# def detect_language(data, column):
+#     tqdm.pandas()
+#     data['lang'] = data[column].progress_apply(lambda x: TextBlob(x).detect_language())
 
 # C. Sentiment Analysis 
 

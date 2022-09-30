@@ -9,8 +9,6 @@
 ####################################################################################################
 
 ## Basic data manipulation and visualization
-from lib2to3.pgen2 import token
-from turtle import title
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -53,20 +51,23 @@ from tqdm.auto import tqdm
 
 # A. Univariate and Bivariate Visualizations
 
-def plot_distributions(data, x, y = None, max_cat = 20, top = None, bins = None, figsize = (15, 9)):
+def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None, figsize = (15, 9), title = None, xlabel = None, ylabel = None, normalize = True):
+    
     # Univariate Analysis
-
     if y is None: 
         fig, ax = plt.subplots(figsize = figsize)
         fig.suptitle(x, fontsize = 20)
 
         ## Plot categorical variables
-        if data[x].nunique() <= max_cat:
-            if top is None:
-                data[x].value_counts().sort_values(by = "index").plot(kind = 'bar', legend = False, ax = ax).grid(axis = 'x')
-            else: 
-                data[x].value_counts().sort_values(by = "index").tail(top).plot(kind = 'bar', legend = False, ax = ax).grid(axis = 'x')
-
+        if data[x].nunique() <= maxcat:
+            if top_n is None:
+                data[x].value_counts(normalize = normalize).plot(kind = "barh").grid('x')
+                ax.set(ylabel = ylabel)
+                ax.set_title(title, fontsize = 20)
+            else:  
+                data[x].value_counts(normalize = normalize).sort_values(ascending = False).head(top_n).plot(kind = "barh").grid('x')
+                ax.set(ylabel = ylabel)
+                ax.set_title(title, fontsize = 20)
         ## Plot numerical variables
         else:
             sns.distplot(data[x], hist=True, kde=True, kde_kws={'shade':True}, ax=ax)
@@ -120,8 +121,8 @@ def get_sentiment(data, col, algo = 'vader'):
     new_data = data.copy()
 
     if algo == 'vader':
-        sent = SentimentIntensityAnalyzer()
-        new_data['sentiment'] = new_data[col].progress_apply(lambda x: sent.polarity_scores(str(x))['compound'])
+        sid = SentimentIntensityAnalyzer()
+        new_data['sentiment'] = new_data[col].progress_apply(lambda x: sid.polarity_scores(str(x))['compound'])
 
     elif algo == 'textblob':
         new_data['sentiment'] = new_data[col].progress_apply(lambda x: TextBlob(str(x)).sentiment.polarity)
@@ -206,7 +207,7 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
     txt = re.sub(r'[^\w\s]', '', txt)
     txt = txt.lower() if lower is True else txt
 
-    ## Expand contractons
+    ## Expand contractions
     tqdm.pandas()
     print("Expanding contractions...")
     print()

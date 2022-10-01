@@ -20,7 +20,7 @@ import math, re, string
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from textblob import TextBlob
-import langdetect
+from langdetect import detect, detect_langs
 # from nltk.tokenize import word_tokenize
 # from nltk.probability import FreqDist
 # from nltk.corpus import stopwords
@@ -106,6 +106,44 @@ def extract_lengths(data, col):
     print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
 
     return new_data
+
+
+
+
+
+
+
+import spacy
+from spacy.language import Language
+from spacy_langdetect import LanguageDetector
+
+def get_lang_detector(nlp, name):
+    return LanguageDetector()
+
+nlp = spacy.load("en_core_web_sm")
+Language.factory("language_detector", func=get_lang_detector)
+nlp.add_pipe('language_detector', last=True)
+text = 'This is an english text.'
+doc = nlp(text)
+print(doc._.language)
+
+
+
+## Detect langauage
+def detect_language(data, col):
+    tqdm.pandas()
+
+    def get_lang_detector(nlp, name):
+        return LanguageDetector()
+
+    nlp = spacy.load("en_core_web_sm")
+    Language.factory("language_detector", func = get_lang_detector)
+    
+
+
+
+
+
 
 ## Detect Language
 # def detect_language(data, column):

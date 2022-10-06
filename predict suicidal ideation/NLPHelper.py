@@ -138,6 +138,8 @@ def detect_language(data, col):
 
     nlp = spacy.load("en_core_web_sm")
     Language.factory("language_detector", func = get_lang_detector)
+    nlp.add_pipe('language_detector', last = True)
+    data['lang'] = data[col].progress_apply(lambda x: nlp(x)._.language['language'])
     
 
 

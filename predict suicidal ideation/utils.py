@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import math, re, string
+import spacy
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from sklearn import preprocessing, model_selection, feature_extraction, feature_selection, metrics, manifold, naive_bayes, pipeline
@@ -20,7 +20,13 @@ from tqdm.auto import tqdm
 
 # 2. Text Analysis and preprocessing
 
-# Feature Extraction
+## Language Detection
+
+
+
+
+
+## Feature Extraction
 
 def extract_lengths(data, col):
     
@@ -36,6 +42,33 @@ def extract_lengths(data, col):
     print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
 
     return new_data
+
+def extract_ner(text, model = None, tags_list = None, serve = True):
+    """
+    case use any of spacy models 
+    """ 
+    nlp = spacy.load('en_core_web_sm') if model is None else model
+    doc = nlp(text)
+
+    if serve == True:
+        spacy.displacy.serve(doc, style = 'ent', options= {"ents": tags_list})
+    else: 
+        spacy.displacy.render(doc, style = 'ent', options= {"ents": tags_list})
+
+
+# def extract_NER(data, col, model = None):
+#     tqdm.pandas()
+#     nlp = spacy.load('en_core_web_sm') if model is None else model
+#     doc = nlp(data[col])
+
+#     data["tags"] = data[col].progress_apply(lambda x: [(ent.text, ent.label_) for ent in nlp(x).ents])
+
+
+
+
+
+
+
 
 ## Univariate and Bivariate Visualizations
 

@@ -4,53 +4,40 @@
 # Purpose: Helper functions for NLP model to predict suicidal ideation.                            #
 ####################################################################################################
 
-####################################################################################################
-#                             1. Import libraries                                                  #
-####################################################################################################
+# 1. Import libraries
 
-## Basic data manipulation and visualization
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-## Text analysis and preprocessing
-# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import math, re, string
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from textblob import TextBlob
-from langdetect import detect, detect_langs
-# from nltk.tokenize import word_tokenize
-# from nltk.probability import FreqDist
-# from nltk.corpus import stopwords
-# from nltk.stem.porter import PorterStemmer
-
-## Machine Learning
 from sklearn import preprocessing, model_selection, feature_extraction, feature_selection, metrics, manifold, naive_bayes, pipeline
-
 from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics
 import xgboost as xgb
-
-# from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
-# from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.tree import DecisionTreeClassifier
-# from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.svm import SVC
-# from xgboost import XGBClassifier
-
-
-## Progress bar
 from tqdm.auto import tqdm
 
+# 2. Text Analysis and preprocessing
 
-####################################################################################################
-#                             2. Text analysis and Preprocessing                                                     #
-####################################################################################################
+# Feature Extraction
 
-# A. Univariate and Bivariate Visualizations
+def extract_lengths(data, col):
+    
+    tqdm.pandas()
+    new_data = data.copy()
+    new_data['word_count'] = new_data[col].progress_apply(lambda x: len(nltk.word_tokenize(str(x))))
+    new_data['char_count'] = new_data[col].progress_apply(lambda x: sum(len(word) for word in nltk.word_tokenize(str(x))))
+    new_data['sentence_count'] = new_data[col].progress_apply(lambda x: len(nltk.sent_tokenize(str(x))))
+    new_data['avg_word_len'] = new_data['char_count']/new_data['word_count']
+    new_data['avg_sent_len'] = new_data['word_count']/new_data['sentence_count']
+
+    print("Characteristics of text", end= " ")
+    print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
+
+    return new_data
+
+## Univariate and Bivariate Visualizations
 
 def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None, figsize = (15, 9), title = None, xlabel = None, ylabel = None, normalize = True):
     
@@ -63,10 +50,10 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
         if data[x].nunique() <= maxcat:
             if top_n is None:
                 data[x].value_counts(normalize = normalize).plot(kind = "barh").grid('x')
-                ax.set(ylabel = xlabel)
+                ax.set(xlabel = xlabel)
             else:  
                 data[x].value_counts(normalize = normalize).sort_values(ascending = False).head(top_n).plot(kind = "barh").grid('x')
-                ax.set(ylabel = xlabel)
+                ax.set(xlabel = xlabel)
         ## Plot numerical variables
         else:
             sns.distplot(data[x], hist=True, kde=True, kde_kws={'shade':True}, ax=ax)
@@ -90,56 +77,39 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
     plt.show()
 
 
-# B. Feature Extraction
-
-def extract_lengths(data, col):
-    
-    tqdm.pandas()
-    new_data = data.copy()
-    new_data['word_count'] = new_data[col].progress_apply(lambda x: len(nltk.word_tokenize(str(x))))
-    new_data['char_count'] = new_data[col].progress_apply(lambda x: sum(len(word) for word in nltk.word_tokenize(str(x))))
-    new_data['sentence_count'] = new_data[col].progress_apply(lambda x: len(nltk.sent_tokenize(str(x))))
-    new_data['avg_word_len'] = new_data['char_count']/new_data['word_count']
-    new_data['avg_sent_len'] = new_data['word_count']/new_data['sentence_count']
-
-    print("Characteristics of text", end= " ")
-    print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
-
-    return new_data
 
 
 
 
 
 
+# import spacy
+# from spacy.language import Language
+# from spacy_langdetect import LanguageDetector
 
-import spacy
-from spacy.language import Language
-from spacy_langdetect import LanguageDetector
+# def get_lang_detector(nlp, name):
+#     return LanguageDetector()
 
-def get_lang_detector(nlp, name):
-    return LanguageDetector()
-
-nlp = spacy.load("en_core_web_sm")
-Language.factory("language_detector", func=get_lang_detector)
-nlp.add_pipe('language_detector', last=True)
-text = 'This is an english text.'
-doc = nlp(text)
-print(doc._.language)
+# nlp = spacy.load("en_core_web_sm")
+# Language.factory("language_detector", func=get_lang_detector)
+# nlp.add_pipe('language_detector', last=True)
+# text = 'This is an english text.'
+# doc = nlp(text)
+# print(doc._.language)
 
 
 
 ## Detect langauage
-def detect_language(data, col):
-    tqdm.pandas()
+# def detect_language(data, col):
+#     tqdm.pandas()
 
-    def get_lang_detector(nlp, name):
-        return LanguageDetector()
+#     def get_lang_detector(nlp, name):
+#         return LanguageDetector()
 
-    nlp = spacy.load("en_core_web_sm")
-    Language.factory("language_detector", func = get_lang_detector)
-    nlp.add_pipe('language_detector', last = True)
-    data['lang'] = data[col].progress_apply(lambda x: nlp(x)._.language['language'])
+#     nlp = spacy.load("en_core_web_sm")
+#     Language.factory("language_detector", func = get_lang_detector)
+#     nlp.add_pipe('language_detector', last = True)
+#     data['lang'] = data[col].progress_apply(lambda x: nlp(x)._.language['language'])
     
 
 
@@ -154,27 +124,27 @@ def detect_language(data, col):
 
 # C. Sentiment Analysis 
 
-def get_sentiment(data, col, algo = 'vader'):
+# def get_sentiment(data, col, algo = 'vader'):
 
-    """
-    Computing sentiment using Vader, or TextBlob
-    """
-    tqdm.pandas()
-    new_data = data.copy()
+#     """
+#     Computing sentiment using Vader, or TextBlob
+#     """
+#     tqdm.pandas()
+#     new_data = data.copy()
 
-    if algo == 'vader':
-        sid = SentimentIntensityAnalyzer()
-        new_data['sentiment'] = new_data[col].progress_apply(lambda x: sid.polarity_scores(str(x))['compound'])
+#     if algo == 'vader':
+#         sid = SentimentIntensityAnalyzer()
+#         new_data['sentiment'] = new_data[col].progress_apply(lambda x: sid.polarity_scores(str(x))['compound'])
 
-    elif algo == 'textblob':
-        new_data['sentiment'] = new_data[col].progress_apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+#     elif algo == 'textblob':
+#         new_data['sentiment'] = new_data[col].progress_apply(lambda x: TextBlob(str(x)).sentiment.polarity)
 
-    else:
-        print("Please select a valid algorithm")
+#     else:
+#         print("Please select a valid algorithm")
 
-    print(data[['sentiment']].describe().T)
+#     print(data[['sentiment']].describe().T)
 
-    return new_data
+#     return new_data
 
 
 # D. Create stopwords

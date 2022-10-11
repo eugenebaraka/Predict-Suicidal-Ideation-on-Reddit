@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import spacy
+import re
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from sklearn import preprocessing, model_selection, feature_extraction, feature_selection, metrics, manifold, naive_bayes, pipeline

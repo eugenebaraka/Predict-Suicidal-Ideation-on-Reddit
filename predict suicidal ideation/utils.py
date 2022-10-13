@@ -18,31 +18,11 @@ from sklearn import preprocessing, model_selection, feature_extraction, feature_
 from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics
 import xgboost as xgb
 from tqdm.auto import tqdm
+from langdetect import detect
 
 # 2. Text Analysis and preprocessing
 
-## Language Detection
-
-
-
-
-
 ## Feature Extraction
-
-def extract_lengths(data, col):
-    
-    tqdm.pandas()
-    new_data = data.copy()
-    new_data['word_count'] = new_data[col].progress_apply(lambda x: len(nltk.word_tokenize(str(x))))
-    new_data['char_count'] = new_data[col].progress_apply(lambda x: sum(len(word) for word in nltk.word_tokenize(str(x))))
-    new_data['sentence_count'] = new_data[col].progress_apply(lambda x: len(nltk.sent_tokenize(str(x))))
-    new_data['avg_word_len'] = new_data['char_count']/new_data['word_count']
-    new_data['avg_sent_len'] = new_data['word_count']/new_data['sentence_count']
-
-    print("Characteristics of text", end= " ")
-    print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
-
-    return new_data
 
 def extract_ner(text, model = None, tags_list = None, serve = True):
     """
@@ -55,6 +35,45 @@ def extract_ner(text, model = None, tags_list = None, serve = True):
         spacy.displacy.serve(doc, style = 'ent', options= {"ents": tags_list})
     else: 
         spacy.displacy.render(doc, style = 'ent', options= {"ents": tags_list})
+
+def utils_ner_text(txt, ner=None, lst_tag_filter=None, grams_join="_"):
+    ## apply model
+    ner = spacy.load("en_core_web_sm") if ner is None else ner
+    entities = ner(txt).ents
+
+    ## tag text
+    tagged_txt = txt
+    for tag in entities:
+        if (lst_tag_filter is None) or (tag.label_ in lst_tag_filter):
+            try:
+                tagged_txt = re.sub(tag.text, grams_join.join(tag.text.split()), tagged_txt) #it breaks with wild characters like *+
+            except Exception as e:
+                continue
+
+    ## extract tags list
+    if lst_tag_filter is None:
+        lst_tags = [(tag.text, tag.label_) for tag in entities]  #list(set([(word.text, word.label_) for word in ner(x).ents]))
+    else: 
+        lst_tags = [(word.text, word.label_) for word in entities if word.label_ in lst_tag_filter]
+
+    return tagged_txt, lst_tags
+
+
+def extract_lengths(data, col):
+    
+    tqdm.pandas()
+    new_data = data.copy()
+    new_data['word_count'] = new_data[col].progress_apply(lambda x: len(nltk.word_tokenize(str(x))))
+    new_data['char_count'] = new_data[col].progress_apply(lambda x: sum(len(word) for word in nltk.word_tokenize(str(x))))
+    new_data['sentence_count'] = new_data[col].progress_apply(lambda x: len(nltk.sent_tokenize(str(x))))
+    new_data['avg_word_len'] = new_data['char_count']/new_data['word_count']
+    new_data['avg_sent_len'] = new_data['word_count']/new_data['sentence_count']
+
+    print("Characteristics of text")
+    print()
+    print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
+
+    return new_data
 
 
 # def extract_NER(data, col, model = None):

@@ -19,26 +19,27 @@ from sklearn import preprocessing, model_selection, feature_extraction, linear_m
 import xgboost as xgb
 from tqdm.auto import tqdm
 from langdetect import detect
+import collections
 
 # 2. Text Analysis and preprocessing
 
 ## Feature Extraction
 
-def extract_ner(text, model = None, tags_list = None, serve = True):
-    """
-    case use any of spacy models 
-    """ 
-    nlp = spacy.load('en_core_web_sm') if model is None else model
-    doc = nlp(text)
+### NER (would be better to write a class for this??)
 
+def ner_displacy(txt, ner=None, lst_tag_filter=None, title=None, serve=False):
+    ner = spacy.load("en_core_web_lg") if ner is None else ner
+    doc = ner(txt)
+    doc.user_data["title"] = title
     if serve == True:
-        spacy.displacy.serve(doc, style = 'ent', options= {"ents": tags_list})
-    else: 
-        spacy.displacy.render(doc, style = 'ent', options= {"ents": tags_list})
+        spacy.displacy.serve(doc, style="ent", options={"ents":lst_tag_filter})
+    else:
+        spacy.displacy.render(doc, style="ent", options={"ents":lst_tag_filter})
+
 
 def utils_ner_text(txt, ner=None, lst_tag_filter=None, grams_join="_"):
     ## apply model
-    ner = spacy.load("en_core_web_sm") if ner is None else ner
+    ner = spacy.load("en_core_web_lg") if ner is None else ner
     entities = ner(txt).ents
 
     ## tag text
@@ -57,7 +58,73 @@ def utils_ner_text(txt, ner=None, lst_tag_filter=None, grams_join="_"):
         lst_tags = [(word.text, word.label_) for word in entities if word.label_ in lst_tag_filter]
 
     return tagged_txt, lst_tags
+        
+        
+def utils_lst_count(lst, top=None):
+    dic_counter = collections.Counter()
+    for x in lst:
+        dic_counter[x] += 1
+    dic_counter = collections.OrderedDict(sorted(dic_counter.items(), key=lambda x: x[1], reverse=True))
+    lst_top = [ {key:value} for key,value in dic_counter.items() ]
+    if top is not None:
+        lst_top = lst_top[:top]
+    return lst_top
 
+def utils_ner_features(lst_dics_tuples, tag):
+    if len(lst_dics_tuples) > 0:
+        tag_type = []
+        for dic_tuples in lst_dics_tuples:
+            for tuple in dic_tuples:
+                type, n = tuple[1], dic_tuples[tuple]
+                tag_type = tag_type + [type]*n
+                dic_counter = collections.Counter()
+                for x in tag_type:
+                    dic_counter[x] += 1
+        return dic_counter[tag]   #pd.DataFrame([dic_counter])
+    else:
+        return 0
+
+
+def add_ner_spacy(dtf, column, ner=None, lst_tag_filter=None, grams_join="_", create_features=True):
+    tqdm.pandas()
+    ner = spacy.load("en_core_web_lg") if ner is None else ner
+    ## tag text and exctract tags
+    print("--- tagging ---")
+    dtf[[column+"_tagged", "tags"]] = dtf[[column]].progress_apply(lambda x: utils_ner_text(x[0], ner, lst_tag_filter, grams_join), 
+                                                          axis=1, result_type='expand')
+
+    ## put all tags in a column
+    print("--- counting tags ---")
+    dtf["tags"] = dtf["tags"].progress_apply(lambda x: utils_lst_count(x, top=None))
+    
+    ## extract features
+    if create_features == True:
+        print("--- creating features ---")
+        ### features set
+        tags_set = []
+        for lst in dtf["tags"].tolist():
+            for dic in lst:
+                for k in dic.keys():
+                    tags_set.append(k[1])
+        tags_set = list(set(tags_set))
+        ### create columns
+        for feature in tags_set:
+            dtf["tags_"+feature] = dtf["tags"].progress_apply(lambda x: utils_ner_features(x, feature))
+    return dtf
+
+def plot_tags(tags, top=30, figsize=(10,5)):   
+    tags_list = tags.sum()
+    map_lst = list(map(lambda x: list(x.keys())[0], tags_list))
+    dtf_tags = pd.DataFrame(map_lst, columns=['tag','type'])
+    dtf_tags["count"] = 1
+    dtf_tags = dtf_tags.groupby(['type','tag']).count().reset_index().sort_values("count", ascending=False)
+    fig, ax = plt.subplots(figsize=figsize)
+    fig.suptitle("Top frequent tags", fontsize=12)
+    sns.barplot(x="count", y="tag", hue="type", data=dtf_tags.iloc[:top,:], dodge=False, ax=ax)
+    ax.set(ylabel=None)
+    ax.grid(axis="x")
+    plt.show()
+    return dtf_tags
 
 def extract_lengths(data, col):
     
@@ -74,20 +141,6 @@ def extract_lengths(data, col):
     print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
 
     return new_data
-
-
-# def extract_NER(data, col, model = None):
-#     tqdm.pandas()
-#     nlp = spacy.load('en_core_web_sm') if model is None else model
-#     doc = nlp(data[col])
-
-#     data["tags"] = data[col].progress_apply(lambda x: [(ent.text, ent.label_) for ent in nlp(x).ents])
-
-
-
-
-
-
 
 
 ## Univariate and Bivariate Visualizations
@@ -128,76 +181,6 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
         ax[1].grid(True)
 
     plt.show()
-
-
-
-
-
-
-
-
-# import spacy
-# from spacy.language import Language
-# from spacy_langdetect import LanguageDetector
-
-# def get_lang_detector(nlp, name):
-#     return LanguageDetector()
-
-# nlp = spacy.load("en_core_web_sm")
-# Language.factory("language_detector", func=get_lang_detector)
-# nlp.add_pipe('language_detector', last=True)
-# text = 'This is an english text.'
-# doc = nlp(text)
-# print(doc._.language)
-
-
-
-## Detect langauage
-# def detect_language(data, col):
-#     tqdm.pandas()
-
-#     def get_lang_detector(nlp, name):
-#         return LanguageDetector()
-
-#     nlp = spacy.load("en_core_web_sm")
-#     Language.factory("language_detector", func = get_lang_detector)
-#     nlp.add_pipe('language_detector', last = True)
-#     data['lang'] = data[col].progress_apply(lambda x: nlp(x)._.language['language'])
-    
-
-
-
-
-
-
-## Detect Language
-# def detect_language(data, column):
-#     tqdm.pandas()
-#     data['lang'] = data[column].progress_apply(lambda x: TextBlob(x).detect_language())
-
-# C. Sentiment Analysis 
-
-# def get_sentiment(data, col, algo = 'vader'):
-
-#     """
-#     Computing sentiment using Vader, or TextBlob
-#     """
-#     tqdm.pandas()
-#     new_data = data.copy()
-
-#     if algo == 'vader':
-#         sid = SentimentIntensityAnalyzer()
-#         new_data['sentiment'] = new_data[col].progress_apply(lambda x: sid.polarity_scores(str(x))['compound'])
-
-#     elif algo == 'textblob':
-#         new_data['sentiment'] = new_data[col].progress_apply(lambda x: TextBlob(str(x)).sentiment.polarity)
-
-#     else:
-#         print("Please select a valid algorithm")
-
-#     print(data[['sentiment']].describe().T)
-
-#     return new_data
 
 
 # D. Create stopwords
@@ -282,8 +265,9 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
     if list_stopwords is not None:
         tokenized_txt = [w for w in txt.split() if w not in list_stopwords]
     else:
-        print("Warning: No list of stopwords provided")
-        tokenized_txt = txt.split()
+        print("Warning: No list of stopwords provided, so using default NLTK stopwords")
+        stopwords = stopwords_list()
+        tokenized_txt = [w for w in txt.split() if w not in stopwords]
 
     if stem is True & lemma is True:
         print("Warning: It is not recommended to both stem and lemmatize. Are you sure you want to continue?")
@@ -302,3 +286,21 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
     txt = " ".join(tokenized_txt)
 
     return txt
+
+
+def append_clean_text(data, column, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, stem = True, lemma = False, remove_na=True):
+    dtf = data.copy()
+
+    ## apply preprocess
+    dtf = dtf[ pd.notnull(dtf[column]) ]
+    dtf[column+"_clean"] = dtf[column].apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords, stem, lemma))
+    
+    ## residuals
+    dtf["check"] = dtf[column+"_clean"].apply(lambda x: len(x))
+    if dtf["check"].min() == 0:
+        print("--- found NAs ---")
+        print(dtf[[column,column+"_clean"]][dtf["check"]==0].head())
+        if remove_na is True:
+            dtf = dtf[dtf["check"]>0] 
+            
+    return dtf.drop("check", axis=1)

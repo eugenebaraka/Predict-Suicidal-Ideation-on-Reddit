@@ -14,12 +14,14 @@ import spacy
 import re
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from textblob import TextBlob
 from sklearn import preprocessing, model_selection, feature_extraction, feature_selection, metrics, manifold, naive_bayes, pipeline
 from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics
 import xgboost as xgb
 from tqdm.auto import tqdm
 from langdetect import detect
 import collections
+import wordcloud
 
 # 2. Text Analysis and preprocessing
 
@@ -136,7 +138,7 @@ def extract_lengths(data, col):
     new_data['avg_word_len'] = new_data['char_count']/new_data['word_count']
     new_data['avg_sent_len'] = new_data['word_count']/new_data['sentence_count']
 
-    print("Characteristics of text")
+    print("Characteristics of text:")
     print()
     print(new_data[['char_count', 'word_count', 'sentence_count', 'avg_word_len', 'avg_sent_len']].describe().T[['min', 'mean', 'max']])
 
@@ -301,3 +303,52 @@ def append_clean_text(data, column, rm_regex = None, punctuations = True, lower 
             dtf = dtf[dtf["check"]>0] 
             
     return dtf.drop("check", axis=1)
+
+
+## Sentiment Analysis
+def add_sentiment(data, column, algo="vader", sentiment_range=(-1,1)):
+    dtf = data.copy()
+    tqdm.pandas()
+    ## calculate sentiment
+    if algo == "vader":
+        vader = SentimentIntensityAnalyzer()
+        dtf["sentiment"] = dtf[column].progress_apply(lambda x: vader.polarity_scores(x)["compound"])
+    elif algo == "textblob":
+        dtf["sentiment"] = dtf[column].progress_apply(lambda x: TextBlob(x).sentiment.polarity)
+    ## rescaled
+    if sentiment_range != (-1,1):
+        dtf["sentiment"] = preprocessing.MinMaxScaler(feature_range=sentiment_range).fit_transform(dtf[["sentiment"]])
+    print(dtf[['sentiment']].describe().T)
+    return dtf
+
+## Word Frequency
+def word_freq(corpus, ngrams=[1,2,3], top=10, figsize=(10,7)):
+    lst_tokens = nltk.tokenize.word_tokenize(corpus.str.cat(sep=" "))
+    ngrams = [ngrams] if type(ngrams) is int else ngrams
+    
+    ## calculate
+    dtf_freq = pd.DataFrame()
+    for n in ngrams:
+        dic_words_freq = nltk.FreqDist(nltk.ngrams(lst_tokens, n))
+        dtf_n = pd.DataFrame(dic_words_freq.most_common(), columns=["word","freq"])
+        dtf_n["ngrams"] = n
+        dtf_freq = dtf_freq.append(dtf_n)
+    dtf_freq["word"] = dtf_freq["word"].apply(lambda x: " ".join(string for string in x) )
+    dtf_freq = dtf_freq.sort_values(["ngrams","freq"], ascending=[True,False])
+    
+    ## plot
+    fig, ax = plt.subplots(figsize=figsize)
+    sns.barplot(x="freq", y="word", hue="ngrams", dodge=False, ax=ax,
+                data=dtf_freq.groupby('ngrams')["ngrams","freq","word"].head(top))
+    ax.set(xlabel=None, ylabel=None, title="Most frequent words")
+    ax.grid(axis="x")
+    plt.show()
+    return dtf_freq
+
+def plot_wordcloud(corpus, max_words=150, max_font_size=35, figsize=(10,10)):
+    wc = wordcloud.WordCloud(background_color='black', max_words=max_words, max_font_size=max_font_size)
+    wc = wc.generate(str(corpus)) #if type(corpus) is not dict else wc.generate_from_frequencies(corpus)     
+    fig = plt.figure(num=1, figsize=figsize)
+    plt.axis('off')
+    plt.imshow(wc, cmap=None)
+    plt.show()

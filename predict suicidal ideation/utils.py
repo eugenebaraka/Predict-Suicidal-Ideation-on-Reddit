@@ -6,6 +6,8 @@
 
 # 1. Import libraries
 
+from cgi import test
+from pydoc_data.topics import topics
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -15,8 +17,7 @@ import re
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from textblob import TextBlob
-from sklearn import preprocessing, model_selection, feature_extraction, feature_selection, metrics, manifold, naive_bayes, pipeline
-from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics
+from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics, pipeline
 import xgboost as xgb
 from tqdm.auto import tqdm
 from langdetect import detect
@@ -246,7 +247,7 @@ def expand_contractions(text: str, contractions_dict=contractions_dict) -> str:
 
 # G. Text Preprocessing
 
-def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, stem = True, lemma = False):
+def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None): # stem = True, lemma = False):
     ## Remove patterns from text
     if rm_regex is not None: 
         for regex in rm_regex:
@@ -268,17 +269,17 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
         stopwords = stopwords_list()
         tokenized_txt = [w for w in txt.split() if w not in stopwords]
 
-    if stem is True & lemma is True:
-        print("Warning: It is not recommended to both stem and lemmatize. Are you sure you want to continue?")
-    ## Stemming
-    if stem is True:
-        porter_stemmer = nltk.stem.porter.PorterStemmer()
-        tokenized_txt = [porter_stemmer.stem(word) for word in tokenized_txt]
+    # if stem is True & lemma is True:
+    #     print("Warning: It is not recommended to both stem and lemmatize. Are you sure you want to continue?")
+    # ## Stemming
+    # if stem is True:
+    #     porter_stemmer = nltk.stem.porter.PorterStemmer()
+    #     tokenized_txt = [porter_stemmer.stem(word) for word in tokenized_txt]
 
-    ## Lemmatization
-    if lemma is True:
-        lem = nltk.stem.wordnet.WordNetLemmatizer()
-        tokenized_txt = [lem.lemmatize(word) for word in tokenized_txt]
+    # ## Lemmatization
+    # if lemma is True:
+    #     lem = nltk.stem.wordnet.WordNetLemmatizer()
+    #     tokenized_txt = [lem.lemmatize(word) for word in tokenized_txt]
 
     ## Join words again
 
@@ -352,3 +353,35 @@ def plot_wordcloud(corpus, max_words=150, max_font_size=35, figsize=(10,10)):
     plt.axis('off')
     plt.imshow(wc, cmap=None)
     plt.show()
+
+
+## Modeling using bag of words
+
+def bow(X_train, X_test, vectorizer = None, top = 20): 
+    # vectorize 
+    print("Creating sparse matrices...")
+    stemmer = nltk.stem.porter.PorterStemmer() 
+    vectorizer = feature_extraction.text.TfidfVectorizer(stop_words= 'english', ngram_range= (1,3), 
+                                                        tokenizer= lambda x: [stemmer.stem(i) for i in x.split(" ")]) if vectorizer is None else vectorizer
+    X_train_transformed = vectorizer.fit_transform(X_train)
+    print(f"Shape of training matrix: {X_train_transformed.shape}")
+    X_test_transformed = vectorizer.transform(X_test)
+    print(f"Shape of test matrix: {X_test_transformed.shape}")
+
+    # visualize top words in the train set
+    word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
+                                index=vectorizer.get_feature_names_out()).sort_values("counts", 
+                                ascending=False)
+
+    word_counts.head(top).plot(kind="bar", figsize=(15, 5), legend=False)
+    plt.title(f"Top {top} most frequently occurring words")
+    plt.ylabel("Count")
+    plt.xticks(rotation=45)
+    plt.show()
+
+    return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
+
+
+
+
+

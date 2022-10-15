@@ -17,12 +17,13 @@ import re
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from textblob import TextBlob
-from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics, pipeline
+from sklearn import preprocessing, model_selection, feature_extraction, linear_model, tree, neighbors, ensemble, svm, metrics, pipeline, decomposition
 import xgboost as xgb
 from tqdm.auto import tqdm
 from langdetect import detect
 import collections
 import wordcloud
+from tempfile import mkdtemp
 
 # 2. Text Analysis and preprocessing
 
@@ -382,6 +383,22 @@ def bow(X_train, X_test, vectorizer = None, top = 20):
     return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
 
 
+## Hyperparameter optimization
 
+### Logistic Regression
 
+def logit_optimization():
+    estimators = [("dim_reducer", decomposition.PCA()), ("model", linear_model.LogisticRegression())]
+    cachedir = mkdtemp()
+    pipe = pipeline.Pipeline(estimators, memory=cachedir)
 
+    params = [
+        {
+            "dim_reducer" :[decomposition.PCA(), decomposition.KernelPCA()], 
+            "model" : [linear_model.LogisticRegression()],
+            "model__solver": ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'], 
+            "model__penalty": ['l1','l2'], 
+            "model_C": [0.001, 0.01, 0.1, 1, 10, 100], 
+            "dim_reducer__n_components": [2, 3, 4]
+        }
+    ]

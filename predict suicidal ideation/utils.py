@@ -256,16 +256,13 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
     txt = txt.lower() if lower is True else txt
 
     ## Expand contractions
-    tqdm.pandas()
-    print("Expanding contractions...")
-    print()
-    txt = txt.progress_apply(lambda x: expand_contractions(x))
+    
+    txt = expand_contractions(text=txt)
 
     ## Tokenize text
     if list_stopwords is not None:
         tokenized_txt = [w for w in txt.split() if w not in list_stopwords]
     else:
-        print("Warning: No list of stopwords provided, so using default NLTK stopwords")
         stopwords = stopwords_list()
         tokenized_txt = [w for w in txt.split() if w not in stopwords]
 
@@ -290,13 +287,13 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
 
 def append_clean_text(data, column, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, stem = True, lemma = False, remove_na=True):
     dtf = data.copy()
-
+    tqdm.pandas()
     ## apply preprocess
     dtf = dtf[ pd.notnull(dtf[column]) ]
-    dtf[column+"_clean"] = dtf[column].apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords, stem, lemma))
+    dtf[column+"_clean"] = dtf[column].progress_apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords, stem, lemma))
     
     ## residuals
-    dtf["check"] = dtf[column+"_clean"].apply(lambda x: len(x))
+    dtf["check"] = dtf[column+"_clean"].progress_apply(lambda x: len(x))
     if dtf["check"].min() == 0:
         print("--- found NAs ---")
         print(dtf[[column,column+"_clean"]][dtf["check"]==0].head())

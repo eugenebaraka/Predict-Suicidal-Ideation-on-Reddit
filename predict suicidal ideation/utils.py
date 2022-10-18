@@ -203,52 +203,6 @@ def stopwords_list(langs = ['english'], add_words = [], remove_words = []):
     return sorted(list(set(list_stopwords)))
 
 
-# E. Define contractions and their expansion
-
-## dictionary of common English contractions and their full meaning
-
-# """" Dictionary created from https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions"""
-# contractions_dict = {
-# "ain't": "is not", "aren't": "are not", "can't": "cannot", "can't've": "cannot have",
-# "'cause": "because", "could've": "could have", "couldn't": "could not", "couldn't've": "could not have",
-# "didn't": "did not", "doesn't": "does not", "don't": "do not", "hadn't": "had not", "hadn't've": "had not have",
-# "hasn't": "has not", "haven't": "have not", "he'd": "he would", "he'd've": "he would have", "he'll": "he will", "he'll've": "he he will have",
-# "he's": "he is", "how'd": "how did", "how'd'y": "how do you", "how'll": "how will", "how's": "how is", "how're": "how are",
-# "I'd": "I would", "I'd've": "I would have", "I'll": "I will", "I'll've": "I will have", "I'm": "I am", "I've": "I have",
-# "i'd": "i would", "i'd've": "i would have", "i'll": "i will", "i'll've": "i will have", "i'm": "i am", "i've": "i have", "isn't": "is not",
-# "it'd": "it would", "it'd've": "it would have", "it'll": "it will", "it'll've": "it will have", "it's": "it is", "let's": "let us",
-# "ma'am": "madam", "mayn't": "may not", "might've": "might have", "mightn't": "might not", "mightn't've": "might not have", "must've": "must have",
-# "mustn't": "must not", "mustn't've": "must not have", "needn't": "need not", "needn't've": "need not have", "o'clock": "of the clock",
-# "oughtn't": "ought not", "oughtn't've": "ought not have","shan't": "shall not", "sha'n't": "shall not", "shan't've": "shall not have", "she'd": "she would",
-# "she'd've": "she would have", "she'll": "she will", "she'll've": "she will have", "she's": "she is", "should've": "should have",
-# "shouldn't": "should not", "shouldn't've": "should not have", "so've": "so have", "so's": "so as", "that'd": "that would",
-# "that'd've": "that would have", "that's": "that is", "there'd": "there would", "there'd've": "there would have", "there's": "there is",
-# "they'd": "they would", "they'd've": "they would have", "they'll": "they will", "they'll've": "they will have","they're": "they are",
-# "they've": "they have", "to've": "to have", "wasn't": "was not", "we'd": "we would", "we'd've": "we would have", "we'll": "we will", "we'll've": "we will have",
-# "we're": "we are", "we've": "we have", "weren't": "were not", "what'll": "what will", "what'll've": "what will have", "what're": "what are",
-# "what's": "what is", "what've": "what have", "when's": "when is", "when've": "when have", "where'd": "where did", "where's": "where is", "where've": "where have",
-# "who'll": "who will", "who'll've": "who will have", "who's": "who is", "who've": "who have", "why's": "why is", "why've": "why have", "will've": "will have",
-# "won't": "will not", "won't've": "will not have", "would've": "would have", "wouldn't": "would not", "wouldn't've": "would not have","y'all": "you all",
-# "y'all'd": "you all would", "y'all'd've": "you all would have", "y'all're": "you all are", "y'all've": "you all have", "you'd": "you would",
-# "you'd've": "you would have", "you'll": "you will", "you'll've": "you will have", "you're": "you are", "you've": "you have"
-# }
-
-
-# F. Expand contractions in data
-
-
-# def expand_contractions(text: str, contractions_dict=contractions_dict) -> str:
-#     """
-#     Takes in a string and a dictionary of contractions and their expansions 
-#     Returns an expanded string. 
-#     """
-#     re_pattern = re.compile('(%s)' % '|'.join(contractions_dict.keys()))
-#     def replace(match):
-#         return contractions_dict[match.group(0)]
-
-#     return re_pattern.sub(replace, text)
-
-
 # G. Text Preprocessing
 
 def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None): # stem = True, lemma = False):
@@ -274,18 +228,6 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
         stopwords = stopwords_list()
         tokenized_txt = [w for w in txt.split() if w not in stopwords]
 
-    # if stem is True & lemma is True:
-    #     print("Warning: It is not recommended to both stem and lemmatize. Are you sure you want to continue?")
-    # ## Stemming
-    # if stem is True:
-    #     porter_stemmer = nltk.stem.porter.PorterStemmer()
-    #     tokenized_txt = [porter_stemmer.stem(word) for word in tokenized_txt]
-
-    # ## Lemmatization
-    # if lemma is True:
-    #     lem = nltk.stem.wordnet.WordNetLemmatizer()
-    #     tokenized_txt = [lem.lemmatize(word) for word in tokenized_txt]
-
     ## Join words again
 
     txt = " ".join(tokenized_txt)
@@ -293,12 +235,12 @@ def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, 
     return txt
 
 
-def append_clean_text(data, column, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, stem = True, lemma = False, remove_na=True):
+def append_clean_text(data, column, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, remove_na=True):
     dtf = data.copy()
     tqdm.pandas()
     ## apply preprocess
     dtf = dtf[ pd.notnull(dtf[column]) ]
-    dtf[column+"_clean"] = dtf[column].progress_apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords, stem, lemma))
+    dtf[column+"_clean"] = dtf[column].progress_apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords))
     
     ## residuals
     dtf["check"] = dtf[column+"_clean"].progress_apply(lambda x: len(x))

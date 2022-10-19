@@ -175,17 +175,16 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
 
     # Bivariate analysis
     else:
-        fig, ax = plt.subplots(nrows=1, ncols=2, sharex=False, sharey=False, figsize = figsize)
+        fig = plt.figure(figsize = figsize)
         fig.suptitle(x, fontsize = 20)
         for i in data[y].unique():
-            sns.distplot(data[data[y] == i][x], hist=True, kde=True, bins=bins, hist_kws={'alpha':0.8}, axlabel="", ax=ax[0])
-            sns.distplot(data[data[y] == i][x], hist=False, kde=True, hist_kws={'shade':True}, axlabel="", ax=ax[1])
-
-        ax[0].set(title = 'histogram')
-        ax[0].grid(True)
-        ax[0].legend(data[y].unique())
-        ax[1].set(title = 'density')
-        ax[1].grid(True)
+            ax = sns.distplot(data[data[y] == i][x], hist=True, kde=True, bins=bins, hist_kws={'alpha':0.8}, axlabel="")
+        
+        ax.set(title = 'histogram')
+        ax.grid(True)
+        ax.legend(data[y].unique())
+        # ax[1].set(title = 'density')
+        # ax[1].grid(True)
 
     plt.show()
 
@@ -205,42 +204,32 @@ def stopwords_list(langs = ['english'], add_words = [], remove_words = []):
 
 # G. Text Preprocessing
 
-def text_preprocessing(txt, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None): # stem = True, lemma = False):
-    ## Remove patterns from text
-    if rm_regex is not None: 
-        for regex in rm_regex:
+def text_preprocessing(txt, rmv_regex = None,lower=True, stopwords = None):
+    if rmv_regex is not None:
+        for regex in rmv_regex:
             txt = re.sub(regex, "", txt)
+    txt = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', txt) # remove any url
 
-    ## Remove punctuation and lower text
-    # txt = txt.translate(str.maketrans('', '', string.punctuation)) if punctuations is True else txt
-    txt = re.sub(r'[^\w\s]', '', txt)
-    txt = txt.lower() if lower is True else txt
+    txt = re.sub(r'[^\w\s]', "", txt) # remove punctuations
+    txt = txt.lower() if lower is True else txt # lower case text
+    txt = contractions.fix(txt) # expand contractions
 
-    ## Expand contractions
-    
-    # txt = expand_contractions(text=txt)
-    txt = contractions.fix(txt)
-
-    ## Tokenize text
-    if list_stopwords is not None:
-        tokenized_txt = [w for w in txt.split() if w not in list_stopwords]
+    if stopwords is not None:
+        tokenized_txt = [w for w in txt.split() if w not in stopwords]
     else:
         stopwords = stopwords_list()
         tokenized_txt = [w for w in txt.split() if w not in stopwords]
 
-    ## Join words again
-
     txt = " ".join(tokenized_txt)
 
     return txt
-
-
-def append_clean_text(data, column, rm_regex = None, punctuations = True, lower = True, contractions = True, list_stopwords = None, remove_na=True):
+    
+def append_clean_text(data, column, rmv_regex = None, lower = True, stopwords = None, remove_na=True):
     dtf = data.copy()
     tqdm.pandas()
     ## apply preprocess
-    dtf = dtf[ pd.notnull(dtf[column]) ]
-    dtf[column+"_clean"] = dtf[column].progress_apply(lambda x: text_preprocessing(x, rm_regex, punctuations, lower, contractions, list_stopwords))
+    dtf = dtf[pd.notnull(dtf[column])]
+    dtf[column+"_clean"] = dtf[column].progress_apply(lambda x: text_preprocessing(x, rmv_regex, lower, stopwords))
     
     ## residuals
     dtf["check"] = dtf[column+"_clean"].progress_apply(lambda x: len(x))
@@ -251,7 +240,6 @@ def append_clean_text(data, column, rm_regex = None, punctuations = True, lower 
             dtf = dtf[dtf["check"]>0] 
             
     return dtf.drop("check", axis=1)
-
 
 ## Sentiment Analysis
 def add_sentiment(data, column, algo="vader", sentiment_range=(-1,1)):
@@ -371,9 +359,6 @@ def plot_confusion_matrix(actual_classes : np.array, predicted_classes : np.arra
     plt.xlabel('Predicted'); plt.ylabel('Actual'); plt.title('Confusion Matrix')
 
     plt.show()
-
-
-
 
 
 ## Hyperparameter optimization

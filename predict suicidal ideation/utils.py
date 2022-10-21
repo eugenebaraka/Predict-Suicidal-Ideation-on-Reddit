@@ -292,7 +292,7 @@ def plot_wordcloud(corpus, max_words=150, max_font_size=35, figsize=(10,10)):
 
 ## Modeling using bag of words
 
-def bow(X_train, X_test, vectorizer = None, top = 20): 
+def bow(X_train, X_test, vectorizer = None, top = 20, show_top = False): 
     # vectorize 
     print("Creating sparse matrices...")
     stemmer = nltk.stem.porter.PorterStemmer() 
@@ -304,17 +304,18 @@ def bow(X_train, X_test, vectorizer = None, top = 20):
     print(f"Shape of test matrix: {X_test_transformed.shape}")
 
     # visualize top words in the train set
-    word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
-                                index=vectorizer.get_feature_names_out()).sort_values("counts", 
-                                ascending=False)
+    if show_top is True:
+        word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
+                                    index=vectorizer.get_feature_names_out()).sort_values("counts", 
+                                    ascending=False)
 
-    word_counts.head(top).plot(kind="bar", figsize=(15, 5), legend=False)
-    plt.title(f"Top {top} most frequently occurring words")
-    plt.ylabel("Count")
-    plt.xticks(rotation=45)
-    plt.show()
-
-    return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
+        word_counts.head(top).plot(kind="bar", figsize=(15, 5), legend=False)
+        plt.title(f"Top {top} most frequently occurring words")
+        plt.ylabel("Count")
+        plt.xticks(rotation=45)
+        plt.show()
+    else:
+        return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
 
 
 ## Cross validation confusion matrix
@@ -365,18 +366,22 @@ def plot_confusion_matrix(actual_classes : np.array, predicted_classes : np.arra
 
 ### Logistic Regression
 
-def logit_optimization():
-    estimators = [("dim_reducer", decomposition.PCA()), ("model", linear_model.LogisticRegression())]
-    cachedir = mkdtemp()
-    pipe = pipeline.Pipeline(estimators, memory=cachedir)
+# def logit_optimization():
+#     estimators = [("dim_reducer", decomposition.PCA()), ("model", linear_model.LogisticRegression())]
+#     cachedir = mkdtemp()
+#     pipe = pipeline.Pipeline(estimators, memory=cachedir)
 
-    params = [
-        {
-            "dim_reducer" :[decomposition.PCA(), decomposition.KernelPCA()], 
-            "model" : [linear_model.LogisticRegression()],
-            "model__solver": ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'], 
-            "model__penalty": ['l1','l2'], 
-            "model_C": [0.001, 0.01, 0.1, 1, 10, 100], 
-            "dim_reducer__n_components": [2, 3, 4]
-        }
-    ]
+#     params = [
+#         {
+#             "dim_reducer" :[decomposition.PCA(), decomposition.KernelPCA()], 
+#             "model" : [linear_model.LogisticRegression()],
+#             "model__solver": ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'], 
+#             "model__penalty": ['l1','l2'], 
+#             "model_C": [0.001, 0.01, 0.1, 1, 10, 100], 
+#             "dim_reducer__n_components": [0.5, 0.7, 0.9, 0.95]
+#         }
+#     ]
+
+#     skopt.BayesSearchCV(estimator = pipe, search_spaces = params, scoring = 'accuracy')
+
+    

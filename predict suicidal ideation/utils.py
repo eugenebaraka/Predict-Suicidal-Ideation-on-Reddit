@@ -303,19 +303,20 @@ def bow(X_train, X_test, vectorizer = None, top = 20, show_top = False):
     X_test_transformed = vectorizer.transform(X_test)
     print(f"Shape of test matrix: {X_test_transformed.shape}")
 
-    # visualize top words in the train set
-    if show_top is True:
-        word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
+    word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
                                     index=vectorizer.get_feature_names_out()).sort_values("counts", 
                                     ascending=False)
 
+    # visualize top words in the train set
+    if show_top is True:
+        
         word_counts.head(top).plot(kind="bar", figsize=(15, 5), legend=False)
         plt.title(f"Top {top} most frequently occurring words")
         plt.ylabel("Count")
         plt.xticks(rotation=45)
         plt.show()
-    else:
-        return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
+    
+    return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
 
 
 ## Cross validation confusion matrix

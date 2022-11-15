@@ -211,6 +211,7 @@ def text_preprocessing(txt, rmv_regex = None,lower=True, stopwords = None):
     txt = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', txt) # remove any url
 
     txt = re.sub(r'[^\w\s]', "", txt) # remove punctuations
+    txt = re.sub(r'[0-9]+', "", txt)   # remove numbers
     txt = txt.lower() if lower is True else txt # lower case text
     txt = contractions.fix(txt) # expand contractions
 

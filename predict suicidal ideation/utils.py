@@ -6,13 +6,11 @@
 
 # 1. Import libraries
 
-from cgi import test
-from pydoc_data.topics import topics
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import spacy
+# import spacy
 import re
 import nltk
 import contractions
@@ -160,7 +158,7 @@ def extract_lengths(data, col):
 
 ## Univariate and Bivariate Visualizations
 
-def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None, figsize = (15, 9), title = None, xlabel = None, ylabel = None, normalize = True):
+def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None, figsize = (15, 9), title = None, xlabel = None, ylabel = None, normalize = True, xlog = False):
     """ Plot distributions of a variable.
 
     Arguments:
@@ -203,13 +201,16 @@ def plot_distributions(data, x, y = None, maxcat = 20, top_n = None, bins = None
     # Bivariate analysis
     else:
         fig = plt.figure(figsize = figsize)
-        fig.suptitle(x, fontsize = 20)
+        # fig.suptitle(x, fontsize = 20)
         for i in data[y].unique():
             ax = sns.distplot(data[data[y] == i][x], hist=True, kde=True, bins=bins, hist_kws={'alpha':0.8}, axlabel="")
         
-        ax.set(title = 'histogram')
+        ax.set(title = title)
         ax.grid(True)
         ax.legend(data[y].unique())
+        
+        if xlog is True:
+            ax.set_xscale('log')
         # ax[1].set(title = 'density')
         # ax[1].grid(True)
 
@@ -331,7 +332,7 @@ def add_sentiment(data, column, algo="vader", sentiment_range=(-1,1)):
     return dtf
 
 ## Word Frequency
-def word_freq(corpus, ngrams=[1,2,3], top=10, figsize=(10,7)):
+def word_freq(corpus, ngrams=[1,2,3], top=10, figsize=(10,7), title = None):
     """Find how frequent words are in the text and plot the frequency.
     
     Arguments:
@@ -339,6 +340,7 @@ def word_freq(corpus, ngrams=[1,2,3], top=10, figsize=(10,7)):
         ngrams (list): number of n-grams to look for in corpus
         top (int.)   : number of top words to plot
         figsize (tuple): figure size
+        title (str.)   : figure title
 
     Returns: 
         dtf_freq (DataFrame): dataframe containing frequency of words in each corpus
@@ -360,9 +362,11 @@ def word_freq(corpus, ngrams=[1,2,3], top=10, figsize=(10,7)):
     fig, ax = plt.subplots(figsize=figsize)
     sns.barplot(x="freq", y="word", hue="ngrams", dodge=False, ax=ax,
                 data=dtf_freq.groupby('ngrams')["ngrams","freq","word"].head(top))
-    ax.set(xlabel=None, ylabel=None, title="Most frequent words")
-    ax.grid(axis="x")
+    ax.set(xlabel= "Word frequency")
+    plt.suptitle(title)
+    plt.title(f"Top {top} words per n-grams")
     plt.show()
+    ax.grid(axis="x")
     return dtf_freq
 
 def plot_wordcloud(corpus, max_words=150, max_font_size=35, figsize=(10,10)):
@@ -394,6 +398,7 @@ def bow(X_train, X_test, vectorizer = None, top = 20, show_top = False):
         X_train (DataFrame): unlabelled training data
         X_test (DataFrame): unlabelled validation set
         top (int.)        : number of words to plot
+        vectorizer        : type of vectorizer to use
         show_top (bool)   : whether to plot words or not
 
     Returns:    
@@ -470,27 +475,5 @@ def plot_confusion_matrix(actual_classes : np.array, predicted_classes : np.arra
 
     plt.show()
 
-
-## Hyperparameter optimization
-
-### Logistic Regression
-
-# def logit_optimization():
-#     estimators = [("dim_reducer", decomposition.PCA()), ("model", linear_model.LogisticRegression())]
-#     cachedir = mkdtemp()
-#     pipe = pipeline.Pipeline(estimators, memory=cachedir)
-
-#     params = [
-#         {
-#             "dim_reducer" :[decomposition.PCA(), decomposition.KernelPCA()], 
-#             "model" : [linear_model.LogisticRegression()],
-#             "model__solver": ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'], 
-#             "model__penalty": ['l1','l2'], 
-#             "model_C": [0.001, 0.01, 0.1, 1, 10, 100], 
-#             "dim_reducer__n_components": [0.5, 0.7, 0.9, 0.95]
-#         }
-#     ]
-
-#     skopt.BayesSearchCV(estimator = pipe, search_spaces = params, scoring = 'accuracy')
 
     

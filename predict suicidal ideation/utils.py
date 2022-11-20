@@ -258,10 +258,10 @@ def text_preprocessing(txt, rmv_regex = None,lower=True, stopwords = None):
     if rmv_regex is not None:
         for regex in rmv_regex:
             txt = re.sub(regex, "", txt)
-    txt = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', txt) # remove any url
+    txt = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', ' ', txt) # remove any url
 
-    txt = re.sub(r'[^\w\s]', "", txt) # remove punctuations
-    txt = re.sub(r'[0-9]+', "", txt)   # remove numbers
+    txt = re.sub(r'[^\w\s]', " ", txt) # remove punctuations
+    txt = re.sub(r'[0-9]+', " ", txt)   # remove numbers
     txt = txt.lower() if lower is True else txt # lower case text
     txt = contractions.fix(txt) # expand contractions
 
@@ -381,57 +381,12 @@ def plot_wordcloud(corpus, max_words=150, max_font_size=35, figsize=(10,10)):
     Returns: 
         plot (matplotlib): wordcloud plot
     """
-    wc = wordcloud.WordCloud(background_color='black', max_words=max_words, max_font_size=max_font_size)
+    wc = wordcloud.WordCloud(background_color='white', max_words=max_words, max_font_size=max_font_size)
     wc = wc.generate(str(corpus)) #if type(corpus) is not dict else wc.generate_from_frequencies(corpus)     
     fig = plt.figure(num=1, figsize=figsize)
     plt.axis('off')
     plt.imshow(wc, cmap=None)
     plt.show()
-
-
-## Modeling using bag of words
-
-def bow(X_train, X_test, vectorizer = None, top = 20, show_top = False): 
-    """Generate bag of words and plot top n words.
-    
-    Arguments: 
-        X_train (DataFrame): unlabelled training data
-        X_test (DataFrame): unlabelled validation set
-        top (int.)        : number of words to plot
-        vectorizer        : type of vectorizer to use
-        show_top (bool)   : whether to plot words or not
-
-    Returns:    
-        X_train_transformed (DataFrame): transformed unlabelled training data 
-        X_test_transformed (DataFrame) : tranformed unlabelled test set
-
-    """
-
-    # vectorize 
-    print("Creating sparse matrices...")
-    stemmer = nltk.stem.porter.PorterStemmer() 
-    vectorizer = feature_extraction.text.TfidfVectorizer(stop_words= 'english', ngram_range= (1,3), 
-                                                        tokenizer= lambda x: [stemmer.stem(i) for i in x.split(" ")]) if vectorizer is None else vectorizer
-    X_train_transformed = vectorizer.fit_transform(X_train)
-    print(f"Shape of training matrix: {X_train_transformed.shape}")
-    X_test_transformed = vectorizer.transform(X_test)
-    print(f"Shape of test matrix: {X_test_transformed.shape}")
-
-    word_counts = pd.DataFrame({"counts": X_train_transformed.toarray().sum(axis=0)}, 
-                                    index=vectorizer.get_feature_names_out()).sort_values("counts", 
-                                    ascending=False)
-
-    # visualize top words in the train set
-    if show_top is True:
-        
-        word_counts.head(top).plot(kind="bar", figsize=(15, 5), legend=False)
-        plt.title(f"Top {top} most frequently occurring words")
-        plt.ylabel("Count")
-        plt.xticks(rotation=45)
-        plt.show()
-    
-    return {"X_train_transformed":X_train_transformed, "X_test_transformed": X_test_transformed}
-
 
 ## Cross validation confusion matrix
 

@@ -37,7 +37,7 @@ All the packages and libraries required to run the notebooks are saved in `requi
 - [Supervised learning for suicidal ideation detection in online user content](https://doi.org/10.1155/2018/6157249)
 - [Machine learning for suicidal ideation identification: A systematic literature review](https://doi.org/10.1016/j.chb.2021.107095)
 - [A brief introduction to weakly supervised learning](https://doi.org/10.1093/nsr/nwx106)
-"data_cleaning.ipynb" "modelling.ipynb" "report.pdf" "requirements.txt" "utils.py"
+
 
 ### Data Sources
 - [Manas et al 2019](https://zenodo.org/record/2667859#.YCwdTR1OlQI)

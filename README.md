@@ -16,7 +16,14 @@ Data used in this project can be found [here](https://www.kaggle.com/datasets/ni
 - `Modelling` notebook found in `modelling.ipynb`
 - `Final report` saved as `report.pdf`
 
-All the packages and libraries required to run the notebooks are saved in `requirements.txt`
+## Replication 
+After creating your virtual environment, please run the following in command line to replicate
+
+```
+git clone https://github.com/eugenebaraka/Predict-Suicidal-Ideation-on-Reddit.git
+cd Predict-Suicidal-Ideation-on-Reddit
+pip install -r requirements.txt
+```
 
 ## Resources and citations
 

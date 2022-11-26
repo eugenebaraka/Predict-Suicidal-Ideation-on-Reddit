@@ -1,4 +1,4 @@
-# Using Natural Language Processing to Prediction Suicidal Ideation on Reddit
+# Using Natural Language Processing to Predict Suicidal Ideation on Reddit
 Applying machine learning classification methods to identify suicidal posts in "SuicideWatch" subreddit.
 
 ![sentiment](./_images/sentiment.png)
